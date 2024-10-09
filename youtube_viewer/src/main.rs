@@ -4,7 +4,8 @@ use std::fs;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use actix_files::Files;
 use serde_json::json;
-
+use rusqlite::{params, Connection, Result};
+use std::process::Command;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Video {
@@ -46,11 +47,54 @@ async fn index(sort_by: web::Path<String>) -> impl Responder {
     HttpResponse::Ok().json(json_response)
 }
 
+fn init_db() -> Result<Connection> {
+    let conn = Connection::open("watched_videos.db")?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS watched_videos (
+            url TEXT PRIMARY KEY
+        )",
+        params![],
+    )?;
+
+    Ok(conn)
+}
+
+async fn watch_video(query: web::Query<std::collections::HashMap<String, String>>) -> impl Responder {
+    if let Some(url) = query.get("url") {
+        let conn = init_db().expect("Failed to initialize database");
+        conn.execute(
+            "INSERT INTO watched_videos (url) VALUES (?1)",
+            params![url],
+        ).expect("Failed to insert watched video");
+
+        // Convert the URL to the short form
+        let short_url = url.replace("https://www.youtube.com/watch?v=", "https://youtu.be/");
+
+        // Execute the mpv command
+        let status = Command::new("mpv")
+            .arg(short_url)
+            .arg("--speed=1.5")
+            .status()
+            .expect("Failed to execute mpv command");
+
+        if status.success() {
+            HttpResponse::Ok().body("Video marked as watched and opened with mpv")
+        } else {
+            HttpResponse::InternalServerError().body("Failed to open video with mpv")
+        }
+    } else {
+        HttpResponse::BadRequest().body("Missing url parameter")
+    }
+}
+
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .route("/sort/{sort_by}", web::get().to(index))
+            .route("/watch", web::post().to(watch_video))
             .service(Files::new("/", "static").index_file("index.html"))
 
     })
