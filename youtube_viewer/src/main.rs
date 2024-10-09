@@ -21,7 +21,7 @@ fn read_videos() -> Vec<Video> {
 }
 
 fn sort_by_publish_date(videos: &mut Vec<Video>) {
-    videos.sort_by(|a, b| a.publish_date.cmp(&b.publish_date));
+    videos.sort_by(|a, b| b.publish_date.cmp(&a.publish_date));
 }
 
 fn sort_by_length_minutes(videos: &mut Vec<Video>) {
