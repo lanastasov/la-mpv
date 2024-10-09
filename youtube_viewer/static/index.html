@@ -5,12 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owen Thurm Videos</title>
     <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
         .video-box {
-            border: 1px solid #ccc;
+            border: 1px solid #444;
             padding: 10px;
             margin: 10px;
             width: 300px;
             display: inline-block;
+            background-color: #1e1e1e;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .video-box:hover {
+            background-color: #2e2e2e;
+        }
+        .video-box.watched {
+            background-color: #358993;
+            border-color: #555;
+        }
+        .video-box h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .video-box p {
+            margin: 5px 0;
+        }
+        .video-box button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .video-box button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -32,15 +70,34 @@
                     <h2>${video.title}</h2>
                     <p><a href="${video.url}">Watch on YouTube</a></p>
                     <p>Published: ${new Date(video.publish_date).toLocaleString()}</p>
-                    <p>Length: ${video.length_minutes} minutes</p>
+                    <p>Length: ${video.length_minutes}</p>
                     <button onclick="watchVideo('${video.url}')">Watch with mpv</button>
                 `;
                 videosContainer.appendChild(videoBox);
             });
+
+            // Fetch watched status for each video
+            fetchWatchedStatus();
         }
 
         async function watchVideo(url) {
             await fetch(`http://127.0.0.1:8080/watch?url=${encodeURIComponent(url)}`, { method: 'POST' });
+            fetchWatchedStatus();
+        }
+
+        async function fetchWatchedStatus() {
+            const response = await fetch('http://127.0.0.1:8080/watched');
+            const watchedUrls = await response.json();
+            const videos = document.querySelectorAll('.video-box');
+
+            videos.forEach(video => {
+                const url = video.querySelector('a').href;
+                if (watchedUrls.includes(url)) {
+                    video.classList.add('watched');
+                } else {
+                    video.classList.remove('watched');
+                }
+            });
         }
 
         fetchVideos('publish_date'); // Default sort

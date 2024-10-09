@@ -5,7 +5,7 @@ use std::io::Write;
 use dotenv::dotenv;
 use std::env;
 
-const CHANNEL_ID: &str = "UC1Jp-8YnEz3pjPkhCC555gA";  // Channel ID for JeaFxForexTrading
+const CHANNEL_ID: &str = "UClmfDPjhb2vhfTmKAuoUO8A";  // Channel ID for JeaFxForexTrading
 const BASE_URL_SEARCH: &str = "https://www.googleapis.com/youtube/v3/search";
 const BASE_URL_VIDEOS: &str = "https://www.googleapis.com/youtube/v3/videos";
 const VIDEO_URL_PREFIX: &str = "https://www.youtube.com/watch?v=";
@@ -15,7 +15,7 @@ struct Video {
     title: String,
     url: String,
     publish_date: String,
-    length_minutes: f64,
+    length_minutes: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -57,7 +57,7 @@ struct ContentDetails {
     duration: String,  // The ISO 8601 formatted duration string
 }
 
-async fn fetch_video_details(api_key: &str, video_ids: &str) -> Result<Vec<f64>, Error> {
+async fn fetch_video_details(api_key: &str, video_ids: &str) -> Result<Vec<String>, Error> {
     let url = format!(
         "{}?key={}&id={}&part=contentDetails",
         BASE_URL_VIDEOS, api_key, video_ids
@@ -67,32 +67,46 @@ async fn fetch_video_details(api_key: &str, video_ids: &str) -> Result<Vec<f64>,
     let mut durations = Vec::new();
 
     for item in response.items {
-        let duration_minutes = parse_iso8601_duration(&item.contentDetails.duration);
-        durations.push(duration_minutes);
+        let duration_str = parse_iso8601_duration(&item.contentDetails.duration);
+        durations.push(duration_str);
     }
 
     Ok(durations)
 }
 
+
 // Helper function to parse ISO 8601 duration into minutes
-fn parse_iso8601_duration(duration: &str) -> f64 {
-    let mut minutes = 0.0;
+fn parse_iso8601_duration(duration: &str) -> String {
+    let mut hours = 0;
+    let mut minutes = 0;
+    let mut seconds = 0;
 
     let re = regex::Regex::new(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?").unwrap();
     if let Some(caps) = re.captures(duration) {
-        if let Some(hours) = caps.get(1) {
-            minutes += hours.as_str().parse::<f64>().unwrap() * 60.0;
+        if let Some(h) = caps.get(1) {
+            hours = h.as_str().parse::<i64>().unwrap();
         }
-        if let Some(mins) = caps.get(2) {
-            minutes += mins.as_str().parse::<f64>().unwrap();
+        if let Some(m) = caps.get(2) {
+            minutes = m.as_str().parse::<i64>().unwrap();
         }
-        if let Some(secs) = caps.get(3) {
-            minutes += secs.as_str().parse::<f64>().unwrap() / 60.0;
+        if let Some(s) = caps.get(3) {
+            seconds = s.as_str().parse::<i64>().unwrap();
         }
     }
 
-    minutes
+    // Convert hours to minutes
+    if hours > 0 {
+        minutes += hours * 60;
+    }
+
+    // Format the duration as "Xm Ys" or "Xs"
+    if minutes > 0 {
+        format!("{}m {}s", minutes, seconds)
+    } else {
+        format!("{}s", seconds)
+    }
 }
+
 
 async fn fetch_videos(api_key: &str, channel_id: &str) -> Result<Vec<Video>, Error> {
     let mut video_data = Vec::new();
@@ -136,7 +150,7 @@ async fn fetch_videos(api_key: &str, channel_id: &str) -> Result<Vec<Video>, Err
                             title: item.snippet.title.clone(),
                             url: format!("{}{}", VIDEO_URL_PREFIX, video_id),
                             publish_date: item.snippet.publishedAt.clone(),
-                            length_minutes: durations[i],
+                            length_minutes: durations[i].clone(),
                         });
                     }
                 }
