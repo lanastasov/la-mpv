@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owen Thurm Videos</title>
+    <style>
+        .video-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            width: 300px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Owen Thurm Videos</h1>
+    <div id="videos"></div>
+
+    <script>
+        async function fetchVideos(sortBy) {
+            const response = await fetch(`http://127.0.0.1:8080/sort/${sortBy}`);
+            const videos = await response.json();
+            const videosContainer = document.getElementById('videos');
+            videosContainer.innerHTML = '';
+
+            videos.forEach(video => {
+                const videoBox = document.createElement('div');
+                videoBox.className = 'video-box';
+                videoBox.innerHTML = `
+                    <h2>${video.title}</h2>
+                    <p><a href="${video.url}">Watch on YouTube</a></p>
+                    <p>Published: ${new Date(video.publish_date).toLocaleString()}</p>
+                    <p>Length: ${video.length_minutes} minutes</p>
+                `;
+                videosContainer.appendChild(videoBox);
+            });
+        }
+
+        fetchVideos('publish_date'); // Default sort
+    </script>
+</body>
+</html>
