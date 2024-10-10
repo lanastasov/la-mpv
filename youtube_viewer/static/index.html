@@ -4,66 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owen Thurm Videos</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-        }
-        .video-box {
-            border: 1px solid #444;
-            padding: 10px;
-            margin: 10px;
-            width: 300px;
-            display: inline-block;
-            background-color: #1e1e1e;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .video-box:hover {
-            background-color: #2e2e2e;
-        }
-        .video-box.watched {
-            background-color: #358993;
-            border-color: #555;
-        }
-        .video-box h2 {
-            margin: 0;
-            font-size: 18px;
-        }
-        .video-box p {
-            margin: 5px 0;
-        }
-        .video-box button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .video-box button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>Owen Thurm Videos</h1>
+    <div class="filter-container">
+        <label for="minDuration">Min Duration (min):</label>
+        <input type="number" id="minDuration" value="10" min="0">
+        <label for="maxDuration">Max Duration (min):</label>
+        <input type="number" id="maxDuration" value="90" min="0">
+        <button onclick="applyFilters()">Apply Filters</button>
+    </div>
+
     <div id="videos"></div>
 
     <script>
+        let allVideos = [];
+        let currentMinDuration = 10;
+        let currentMaxDuration = 90;
+
+        function parseTimeToMinutes(timeString) {
+            const match = timeString.match(/(\d+)m(?:\s+(\d+)s)?/);
+            if (!match) return 0;
+
+            const minutes = parseInt(match[1]) || 0;
+            const seconds = parseInt(match[2]) || 0;
+
+            return minutes + (seconds / 60);
+        }
+
         async function fetchVideos(sortBy) {
             const response = await fetch(`http://127.0.0.1:8080/sort/${sortBy}`);
-            const videos = await response.json();
+            allVideos = await response.json();
             const videosContainer = document.getElementById('videos');
             videosContainer.innerHTML = '';
 
-            videos.forEach(video => {
+            allVideos.forEach(video => {
+                const videoBox = document.createElement('div');
+                videoBox.className = 'video-box';
+                videoBox.innerHTML = `
+                    <h2>${video.title}</h2>
+                    <p><a href="${video.url}">Watch on YouTube</a></p>
+                    <p>Published: ${new Date(video.publish_date).toLocaleString()}</p>
+                    <p>Length: ${video.length_minutes}</p>
+                    <button onclick="watchVideo('${video.url}')">Watch with mpv</button>
+                `;
+                videosContainer.appendChild(videoBox);
+            });
+            // Fetch watched status for each video
+            fetchWatchedStatus();
+        }
+
+        function displayFilteredVideos() {
+            const videosContainer = document.getElementById('videos');
+            videosContainer.innerHTML = '';
+
+            const filteredVideos = allVideos.filter(video => {
+                const durationInMinutes = parseTimeToMinutes(video.length_minutes);
+                return durationInMinutes >= currentMinDuration &&
+                      durationInMinutes <= currentMaxDuration;
+            });
+
+            filteredVideos.forEach(video => {
                 const videoBox = document.createElement('div');
                 videoBox.className = 'video-box';
                 videoBox.innerHTML = `
@@ -76,8 +78,13 @@
                 videosContainer.appendChild(videoBox);
             });
 
-            // Fetch watched status for each video
             fetchWatchedStatus();
+        }
+
+        function applyFilters() {
+            currentMinDuration = parseInt(document.getElementById('minDuration').value) || 0;
+            currentMaxDuration = parseInt(document.getElementById('maxDuration').value) || 90;
+            displayFilteredVideos(currentMinDuration,currentMaxDuration);
         }
 
         async function watchVideo(url) {
@@ -89,7 +96,6 @@
             const response = await fetch('http://127.0.0.1:8080/watched');
             const watchedUrls = await response.json();
             const videos = document.querySelectorAll('.video-box');
-
             videos.forEach(video => {
                 const url = video.querySelector('a').href;
                 if (watchedUrls.includes(url)) {
