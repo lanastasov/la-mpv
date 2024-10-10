@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use dotenv::dotenv;
 use std::env;
 
-const CHANNEL_ID: &str = "UClmfDPjhb2vhfTmKAuoUO8A";  // Channel ID for JeaFxForexTrading
+const CHANNEL_ID: &str = "UCSv4qL8vmoSH7GaPjuqRiCQ";  // Channel ID for VRSEN
 const BASE_URL_SEARCH: &str = "https://www.googleapis.com/youtube/v3/search";
 const BASE_URL_VIDEOS: &str = "https://www.googleapis.com/youtube/v3/videos";
 const VIDEO_URL_PREFIX: &str = "https://www.youtube.com/watch?v=";

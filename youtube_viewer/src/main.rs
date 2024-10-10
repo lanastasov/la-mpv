@@ -40,7 +40,7 @@ fn parse_length(length: &str) -> f64 {
 
 
 fn read_videos() -> Vec<Video> {
-    let data = fs::read_to_string("../OwenThurm.json").expect("Unable to read file");
+    let data = fs::read_to_string("../VRSEN.json").expect("Unable to read file");
     let videos: Vec<Video> = serde_json::from_str(&data).expect("JSON was not well-formatted");
     videos
 }
