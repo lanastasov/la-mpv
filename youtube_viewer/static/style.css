@@ -15,7 +15,8 @@ body {
     padding: 10px;
     margin: 10px;
     width: 300px;
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
     background-color: #1e1e1e;
     border-radius: 5px;
     transition: background-color 0.3s;
@@ -35,10 +36,24 @@ body {
 .video-box h2 {
     margin: 0;
     font-size: 18px;
+    text-align: center; /* Center the title */
+    height: 62.43px;
+}
+
+.video-box-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-grow: 1;
+    margin: 0; /* Remove any default margin */
+    padding: 0; /* Remove any default padding */
 }
 
 .video-box p {
     margin: 5px 0;
+    align-self: flex-start; /* Align paragraph to the left */
+    padding: 0; /* Remove any default padding */
 }
 
 .video-box button {
@@ -50,9 +65,10 @@ body {
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
+    margin: 0; /* Remove any default margin */
     cursor: pointer;
     border-radius: 5px;
+    align-self: flex-end; /* Align button to the right */
 }
 
 .video-box button:hover {

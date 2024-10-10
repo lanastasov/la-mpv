@@ -70,10 +70,12 @@
                 videoBox.className = 'video-box';
                 videoBox.innerHTML = `
                     <h2>${video.title}</h2>
-                    <p><a href="${video.url}">Watch on YouTube</a></p>
-                    <p>Published: ${new Date(video.publish_date).toLocaleString()}</p>
-                    <p>Length: ${video.length_minutes}</p>
-                    <button onclick="watchVideo('${video.url}')">Watch with mpv</button>
+                    <div class="video-box-content">
+                      <p><a href="${video.url}">Watch on YouTube</a></p>
+                      <p>Published: ${new Date(video.publish_date).toLocaleString()}</p>
+                      <p>Length: ${video.length_minutes}</p>
+                      <button onclick="watchVideo('${video.url}')">Watch with mpv</button>
+                    </div>
                 `;
                 videosContainer.appendChild(videoBox);
             });
