@@ -1,7 +1,7 @@
 use reqwest::Error;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::Write;
+use std::collections::HashMap;
 use dotenv::dotenv;
 use std::env;
 
@@ -125,7 +125,6 @@ async fn fetch_videos(api_key: &str, channel_id: &str) -> Result<Vec<Video>, Err
         let response: ApiResponse = reqwest::get(&url).await?.json().await?;
         let mut video_ids = Vec::new();
 
-        // Collect video IDs for fetching durations
         for item in response.items.iter() {
             if item.id.kind == "youtube#video" {
                 if let Some(video_id) = &item.id.videoId {
@@ -139,19 +138,25 @@ async fn fetch_videos(api_key: &str, channel_id: &str) -> Result<Vec<Video>, Err
             let video_ids_str = video_ids.join(",");
             let durations = fetch_video_details(api_key, &video_ids_str).await?;
 
-            // Ensure we don't go out of bounds by limiting the iteration to the smallest vector size
-            let min_len = std::cmp::min(response.items.len(), durations.len());
+            // Create a HashMap to map video IDs to their respective durations
+            let duration_map: HashMap<String, String> = video_ids
+                .iter()
+                .cloned()
+                .zip(durations.into_iter())
+                .collect();
 
-            for i in 0..min_len {
-                let item = &response.items[i];
+            // Now iterate through the videos and use the duration_map to get the correct duration
+            for item in response.items.iter() {
                 if item.id.kind == "youtube#video" {
                     if let Some(video_id) = &item.id.videoId {
-                        video_data.push(Video {
-                            title: item.snippet.title.clone(),
-                            url: format!("{}{}", VIDEO_URL_PREFIX, video_id),
-                            publish_date: item.snippet.publishedAt.clone(),
-                            length_minutes: durations[i].clone(),
-                        });
+                        if let Some(duration) = duration_map.get(video_id) {
+                            video_data.push(Video {
+                                title: item.snippet.title.clone(),
+                                url: format!("{}{}", VIDEO_URL_PREFIX, video_id),
+                                publish_date: item.snippet.publishedAt.clone(),
+                                length_minutes: duration.clone(),  // Correctly mapped duration
+                            });
+                        }
                     }
                 }
             }
