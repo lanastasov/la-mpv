@@ -40,10 +40,11 @@
             videosContainer.innerHTML = '';
 
             allVideos.forEach((video, index) => {
+                const reversedIndex = allVideos.length - index;
                 const videoBox = document.createElement('div');
                 videoBox.className = 'video-box';
                 videoBox.innerHTML = `
-                    <div class="index-circle">${index + 1}</div>
+                    <div class="index-circle">${reversedIndex}</div>
                     <h2>${video.title}</h2>
                     <p><a href="${video.url}">Watch on YouTube</a></p>
                     <p>Published: ${new Date(video.publish_date).toLocaleString()}</p>
@@ -62,14 +63,15 @@
             const filteredVideos = allVideos.filter(video => {
                 const durationInMinutes = parseTimeToMinutes(video.length_minutes);
                 return durationInMinutes >= currentMinDuration &&
-                      durationInMinutes <= currentMaxDuration;
+                       durationInMinutes <= currentMaxDuration;
             });
 
             filteredVideos.forEach((video, index) => {
+                const reversedIndex = filteredVideos.length - index;
                 const videoBox = document.createElement('div');
                 videoBox.className = 'video-box';
                 videoBox.innerHTML = `
-                    <div class="index-circle">${index + 1}</div>
+                    <div class="index-circle">${reversedIndex}</div>
                     <h2>${video.title}</h2>
                     <div class="video-box-content">
                       <p><a href="${video.url}">Watch on YouTube</a></p>
