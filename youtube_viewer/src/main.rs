@@ -39,8 +39,8 @@ fn parse_length(length: &str) -> f64 {
 }
 
 
-fn read_videos() -> Vec<Video> {
-    let data = fs::read_to_string("../VRSEN.json").expect("Unable to read file");
+fn read_videos(filename: &str) -> Vec<Video> {
+    let data = fs::read_to_string(filename).expect("Unable to read file");
     let videos: Vec<Video> = serde_json::from_str(&data).expect("JSON was not well-formatted");
     videos
 }
@@ -62,8 +62,10 @@ fn sort_by_title(videos: &mut Vec<Video>) {
     videos.sort_by(|a, b| a.title.cmp(&b.title));
 }
 
-async fn index(sort_by: web::Path<String>) -> impl Responder {
-    let mut videos = read_videos();
+async fn index(path: web::Path<(String, String)>) -> impl Responder {
+    let (sort_by, filename) = path.into_inner();
+    let filename_with_path = format!("../{}.json", filename);
+    let mut videos = read_videos(&filename_with_path);
 
     match sort_by.as_str() {
         "publish_date" => sort_by_publish_date(&mut videos),
@@ -158,10 +160,11 @@ async fn watched_status() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
-            .route("/sort/{sort_by}", web::get().to(index))
+            .route("/sort/{sort_by}/{filename}", web::get().to(index))
             .route("/watch", web::post().to(watch_video))
             .route("/watched", web::get().to(watched_status))
             .service(Files::new("/", "static").index_file("index.html"))
+            .service(Files::new("/OwenThurm", "static").index_file("OwenThurm.html"))
 
     })
     .bind("127.0.0.1:8080")?

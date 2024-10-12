@@ -15,6 +15,20 @@
         <input type="number" id="maxDuration" value="90" min="0">
         <button onclick="applyFilters()">Apply Filters</button>
     </div>
+    <form id="sort-form">
+        <select id="filename">
+            <option value="OwenThurm">OwenThurm</option>
+            <option value="VRSEN">VRSEN</option>
+        </select>
+
+        <select id="sort_by">
+            <option value="publish_date">Publish Date</option>
+            <option value="length_minutes">Length (Minutes)</option>
+            <option value="title">Title</option>
+        </select>
+
+        <button type="submit">Sort</button>
+    </form>
 
     <div id="videos" class="video-container"></div>
 
@@ -22,6 +36,14 @@
         let allVideos = [];
         let currentMinDuration = 10;
         let currentMaxDuration = 90;
+
+        document.getElementById('sort-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const filename = document.getElementById('filename').value;
+            const sort_by = document.getElementById('sort_by').value;
+            fetchVideos(sort_by,filename);
+        });
+
 
         function parseTimeToMinutes(timeString) {
             const match = timeString.match(/(\d+)m(?:\s+(\d+)s)?/);
@@ -33,8 +55,8 @@
             return minutes + (seconds / 60);
         }
 
-        async function fetchVideos(sortBy) {
-            const response = await fetch(`http://127.0.0.1:8080/sort/${sortBy}`);
+        async function fetchVideos(sortBy, filename) {
+            const response = await fetch(`http://127.0.0.1:8080/sort/${sortBy}/${filename}`);
             allVideos = await response.json();
             const videosContainer = document.getElementById('videos');
             videosContainer.innerHTML = '';
@@ -111,7 +133,7 @@
             });
         }
 
-        fetchVideos('publish_date'); // Default sort
+        fetchVideos('publish_date','OwenThurm'); // Default sort
     </script>
 </body>
 </html>
