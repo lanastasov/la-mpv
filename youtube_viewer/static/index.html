@@ -35,25 +35,29 @@
 
     <div id="videos" class="video-container"></div>
     <div id="total-duration"></div>
+    <div id="total-duration-watched"></div>
+    <div id="total-duration-left"></div>
 
     <script>
         let allVideos = [];
         let currentMinDuration = 10;
         let currentMaxDuration = 90;
+        let watchedUrls = []; // Define watchedUrls in a global scope
 
         document.getElementById('sort-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const filename = document.getElementById('filename').value;
             const sort_by = document.getElementById('sort_by').value;
             fetchVideos(sort_by, filename);
+            // calculateTotalDuration();
         });
 
         function parseTimeToMinutes(timeString) {
-            const match = timeString.match(/(\d+)m(?:\s+(\d+)s)?/);
+            const match = timeString.match(/(\d+)m\s*(\d+)s|(\d+)s/);
             if (!match) return 0;
 
             const minutes = parseInt(match[1]) || 0;
-            const seconds = parseInt(match[2]) || 0;
+            const seconds = parseInt(match[2]) || parseInt(match[3]) || 0;
 
             return minutes + (seconds / 60);
         }
@@ -122,11 +126,12 @@
         async function watchVideo(url) {
             await fetch(`http://127.0.0.1:8080/watch?url=${encodeURIComponent(url)}`, { method: 'POST' });
             fetchWatchedStatus();
+            calculateTotalDuration();
         }
 
         async function fetchWatchedStatus() {
             const response = await fetch('http://127.0.0.1:8080/watched');
-            const watchedUrls = await response.json();
+            watchedUrls = await response.json();
             const videos = document.querySelectorAll('.video-box');
             videos.forEach(video => {
                 const url = video.querySelector('a').href;
@@ -138,15 +143,23 @@
             });
         }
 
-        function calculateTotalDuration() {
+     async function calculateTotalDuration() {
             let totalSeconds = 0;
+            let watchedSeconds = 0;
+            const response = await fetch('http://127.0.0.1:8080/watched');
+            watchedUrls = await response.json();
 
             allVideos.forEach(video => {
-                const match = video.length_minutes.match(/(\d+)m(?:\s+(\d+)s)?/);
+                const match = video.length_minutes.match(/(\d+)m\s*(\d+)s|(\d+)s/);
                 if (match) {
                     const minutes = parseInt(match[1]) || 0;
-                    const seconds = parseInt(match[2]) || 0;
-                    totalSeconds += minutes * 60 + seconds;
+                    const seconds = parseInt(match[2]) || parseInt(match[3]) || 0;
+                    const videoSeconds = minutes * 60 + seconds;
+                    totalSeconds += videoSeconds;
+
+                    if (watchedUrls.includes(video.url)) {
+                        watchedSeconds += videoSeconds;
+                    }
                 }
             });
 
@@ -155,8 +168,25 @@
             const totalMinutes = Math.floor(remainingSecondsAfterHours / 60);
             const remainingSeconds = remainingSecondsAfterHours % 60;
 
+            const watchedHours = Math.floor(watchedSeconds / 3600);
+            const remainingWatchedSecondsAfterHours = watchedSeconds % 3600;
+            const watchedMinutes = Math.floor(remainingWatchedSecondsAfterHours / 60);
+            const remainingWatchedSeconds = remainingWatchedSecondsAfterHours % 60;
+
+            const leftSeconds = totalSeconds - watchedSeconds;
+            const leftHours = Math.floor(leftSeconds / 3600);
+            const remainingLeftSecondsAfterHours = leftSeconds % 3600;
+            const leftMinutes = Math.floor(remainingLeftSecondsAfterHours / 60);
+            const remainingLeftSeconds = remainingLeftSecondsAfterHours % 60;
+
             const totalDurationElement = document.getElementById('total-duration');
             totalDurationElement.innerText = `Total Duration: ${totalHours}h ${totalMinutes}m ${remainingSeconds}s`;
+
+            const totalDurationWatchedElement = document.getElementById('total-duration-watched');
+            totalDurationWatchedElement.innerText = `Total Duration Watched: ${watchedHours}h ${watchedMinutes}m ${remainingWatchedSeconds}s`;
+
+            const totalDurationLeftElement = document.getElementById('total-duration-left');
+            totalDurationLeftElement.innerText = `Total Duration Left: ${leftHours}h ${leftMinutes}m ${remainingLeftSeconds}s`;
         }
 
         fetchVideos('publish_date', 'OwenThurm'); // Default sort
