@@ -27,3 +27,66 @@ Ras Mic
 60 videos
 https://www.youtube.com/@rasmic
 https://www.youtube.com/channel/UCBX__dPYqDFqAN4QcWbnUbw
+
+Hussein Nasser
+backend
+909 videos
+https://www.youtube.com/@hnasr
+https://www.youtube.com/channel/UC_ML5xP23TOWKUcc-oAE_Eg
+
+Dreams of Code
+79 videos
+https://www.youtube.com/@dreamsofcode/videos
+https://www.youtube.com/channel/UCWQaM7SpSECp9FELz-cHzuQ
+
+Flo Woelki
+golang, rust
+49 videos
+https://www.youtube.com/@FloWoelki/videos
+https://www.youtube.com/channel/UC18qytfIhR9cNEjUcgGLl3A
+
+Melkey
+golang
+308 videos
+https://www.youtube.com/@MelkeyDev
+https://www.youtube.com/channel/UC1Zfv1Zrp1q5lKgBomzOyCA
+
+GoLab conference
+168 videos
+https://www.youtube.com/@golabconference9448/videos
+
+Kantan Coding
+golang
+128 videos
+https://www.youtube.com/@kantancoding
+
+Singapore Gophers
+79 videos
+https://www.youtube.com/@golangSG/videos
+
+cdruc
+golang
+187 videos
+https://www.youtube.com/@cdruc/videos
+
+Alex Mux
+golang
+15 videos
+https://www.youtube.com/@mr_mux408
+
+Jan Marshal
+48 videos
+https://www.youtube.com/@janmarshalcoding
+
+Prismic
+324 videos
+https://www.youtube.com/@Prismic
+
+NetworkChuck
+network
+452 videos
+https://www.youtube.com/@NetworkChuck
+
+Eli the Computer Guy
+792 videos
+https://www.youtube.com/@elithecomputerguy
