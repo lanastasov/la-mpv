@@ -24,6 +24,7 @@
             <option value="SmartRisk">SmartRisk</option>
             <option value="JeaFx">JeaFx</option>
             <option value="RileyColeman">RileyColeman</option>
+            <option value="ScrollReader">ScrollReader</option>
         </select>
 
         <select id="sort_by">
@@ -45,6 +46,10 @@
         let currentMinDuration = 10;
         let currentMaxDuration = 90;
         let watchedUrls = []; // Define watchedUrls in a global scope
+
+        function normalizeUrl(url) {
+            return url.replace(/\/$/, ''); // Remove trailing slash
+        }
 
         document.getElementById('sort-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -103,10 +108,12 @@
             filteredVideos.forEach((video, index) => {
                 const reversedIndex = filteredVideos.length - index;
 
-                const isWatched = watchedUrls.includes(normalizeUrl(video.url));
+                // const isWatched = watchedUrls.includes(normalizeUrl(video.url));
+                const isWatched = watchedUrls.some(watchedUrl => normalizeUrl(watchedUrl) === normalizeUrl(video.url));
                 if (hideWatched && isWatched) {
                     return; // Skip the watched video
                 }
+
 
                 const videoBox = document.createElement('div');
                 videoBox.className = 'video-box';
@@ -144,9 +151,7 @@
             calculateTotalDuration();
         }
 
-        function normalizeUrl(url) {
-            return url.replace(/\/$/, ''); // Remove trailing slash
-        }
+
 
         async function fetchWatchedStatus() {
             const response = await fetch('http://127.0.0.1:8080/watched');
